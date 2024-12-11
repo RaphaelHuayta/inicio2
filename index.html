@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro e Inicio de Sesión</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #user-count-form, #register-form, #login-form, #landing-page, #reset-password-form {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 300px;
+            margin-top: 20px;
+        }
+        #user-count-form input, #register-form input, #login-form input, #reset-password-form input {
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        #user-count-form button, #register-form button, #login-form button, #reset-password-form button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        #error-message, #register-message, #reset-password-message {
+            color: red;
+        }
+        .link-button {
+            background: none;
+            color: blue;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: underline;
+            display: inline;
+        }
+    </style>
+</head>
+<body>
+    <div id="user-count-form" style="display: flex;">
+        <h2>¿Cuántos usuarios deseas crear?</h2>
+        <input type="number" id="user-count" placeholder="Número de usuarios" min="1">
+        <button onclick="setUserCount()">Confirmar</button>
+    </div>
+    <div id="register-form">
+        <h2>Registro</h2>
+        <input type="text" id="first-name" placeholder="Nombre">
+        <input type="text" id="last-name" placeholder="Apellido">
+        <input type="text" id="birth-date" placeholder="Fecha de nacimiento (DD/MM/YYYY)">
+        <input type="password" id="new-password" placeholder="Contraseña">
+        <button onclick="register()">Registrarse</button>
+        <p id="register-message" style="color: green;"></p>
+        <button class="link-button" onclick="showLoginForm()">Volver a Inicio de Sesión</button>
+    </div>
+    <div id="login-form">
+        <h2>Inicio de Sesión</h2>
+        <input type="text" id="username" placeholder="Correo electrónico">
+        <input type="password" id="password" placeholder="Contraseña">
+        <button onclick="login()">Iniciar Sesión</button>
+        <p id="error-message"></p>
+        <button class="link-button" onclick="showResetPasswordForm()">Olvidé mi contraseña</button>
+        <button class="link-button" onclick="showUserCountForm()">Crear Usuario</button>
+    </div>
+    <div id="reset-password-form">
+        <h2>Restablecer Contraseña</h2>
+        <input type="text" id="reset-username" placeholder="Correo electrónico">
+        <input type="password" id="reset-new-password" placeholder="Nueva Contraseña">
+        <button onclick="resetPassword()">Restablecer</button>
+        <p id="reset-password-message"></p>
+        <button class="link-button" onclick="showLoginForm()">Volver a Inicio de Sesión</button>
+    </div>
+    <div id="landing-page">
+        <header>
+            <h1>Bienvenido a Nuestra Página</h1>
+        </header>
+        <section>
+            <h2>Sobre Nosotros</h2>
+            <p>Esta es una página de ejemplo para mostrar cómo funciona el sistema de inicio de sesión.</p>
+            <p>Hemos creado esta landing page básica con HTML y algo de CSS embebido.</p>
+        </section>
+        <footer>
+            <p>&copy; 2024 Mi Empresa. Todos los derechos reservados.</p>
+        </footer>
+    </div>
+
+    <script>
+        let attempts = 0;
+        let userCount = 0;
+        let currentUser = 0;
+        let generatedEmails = []; // Almacena los correos generados
+
+        function setUserCount() {
+            userCount = document.getElementById("user-count").value;
+            if (userCount > 0) {
+                document.getElementById("user-count-form").style.display = "none";
+                document.getElementById("register-form").style.display = "flex";
+                document.getElementById("register-message").textContent = `Registro de usuario 1 de ${userCount}`;
+            } else {
+                alert("Por favor, ingrese un número válido de usuarios.");
+            }
+        }
+
+        function register() {
+            const firstName = document.getElementById("first-name").value.trim();
+            const lastName = document.getElementById("last-name").value.trim();
+            const birthDate = document.getElementById("birth-date").value.trim();
+            const newPassword = document.getElementById("new-password").value.trim();
+            const registerMessage = document.getElementById("register-message");
+
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s])[A-Za-z\d\S]{8,}$/;
+
+            if (firstName && lastName && birthDate && passwordRegex.test(newPassword)) {
+                const email = `${firstName.slice(0, 2).toLowerCase()}${lastName.slice(-2).toLowerCase()}${currentUser + 1}@ejemplo.com`;
+                generatedEmails.push(email); // Agregar el correo generado a la lista
+                localStorage.setItem(email, newPassword);
+
+                currentUser++;
+                if (currentUser < userCount) {
+                    registerMessage.textContent = `Registro de usuario ${currentUser + 1} de ${userCount}`;
+                    document.getElementById("first-name").value = '';
+                    document.getElementById("last-name").value = '';
+                    document.getElementById("birth-date").value = '';
+                    document.getElementById("new-password").value = '';
+                } else {
+                    // Mostrar los correos generados
+                    alert(`Registro completado. Correos generados:\n${generatedEmails.join('\n')}`);
+                    document.getElementById("register-form").style.display = "none";
+                    document.getElementById("login-form").style.display = "flex";
+                }
+            } else {
+                registerMessage.textContent = "Por favor complete todos los campos. La contraseña debe ser válida.";
+            }
+        }
+
+        function login() {
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const errorMessage = document.getElementById("error-message");
+
+            const storedPassword = localStorage.getItem(username);
+
+            if (attempts >= 3) {
+                errorMessage.textContent = "Cuenta bloqueada. Demasiados intentos fallidos.";
+                return;
+            }
+
+            if (storedPassword && password === storedPassword) {
+                document.getElementById("login-form").style.display = "none";
+                document.getElementById("landing-page").style.display = "block";
+                errorMessage.textContent = "";
+            } else {
+                attempts++;
+                errorMessage.textContent = `Intento fallido. Te quedan ${3 - attempts} intentos.`;
+            }
+        }
+
+        function showUserCountForm() {
+            document.getElementById("login-form").style.display = "none";
+            document.getElementById("user-count-form").style.display = "flex";
+        }
+
+        function showLoginForm() {
+            document.getElementById("register-form").style.display = "none";
+            document.getElementById("reset-password-form").style.display = "none";
+            document.getElementById("user-count-form").style.display = "none";
+            document.getElementById("login-form").style.display = "flex";
+        }
+
+        function resetPassword() {
+            const resetUsername = document.getElementById("reset-username").value.trim();
+            const resetNewPassword = document.getElementById("reset-new-password").value.trim();
+            const resetPasswordMessage = document.getElementById("reset-password-message");
+
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s])[A-Za-z\d\S]{8,}$/;
+
+            const storedPassword = localStorage.getItem(resetUsername);
+
+            if (!storedPassword) {
+                resetPasswordMessage.textContent = "Este correo electrónico no está registrado.";
+                return;
+            }
+
+            if (passwordRegex.test(resetNewPassword)) {
+                localStorage.setItem(resetUsername, resetNewPassword);
+                resetPasswordMessage.textContent = "Contraseña restablecida correctamente.";
+                setTimeout(() => showLoginForm(), 2000);
+            } else {
+                resetPasswordMessage.textContent = "Contraseña inválida.";
+            }
+        }
+    </script>
+</body>
+</html>
